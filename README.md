@@ -191,5 +191,3 @@ git push
 MIT — use it, modify it, share it.
 
 ---
-
-*Built with Claude · Inspired by the idea that your life deserves a dashboard*

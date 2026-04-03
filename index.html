@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Life OS</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #ffffff; --bg2: #f5f5f3; --bg3: #eeede8;
+      --text: #1a1a18; --text2: #6b6a64; --text3: #9c9a93;
+      --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+      --radius: 8px; --radius-lg: 12px;
+      --info-bg: #e6f1fb; --info-tc: #0c447c;
+      --success-bg: #eaf3de; --success-tc: #27500a;
+      --warn-bg: #faeeda; --warn-tc: #633806;
+      --danger-bg: #fcebeb; --danger-tc: #791f1f;
+      --purple: #7F77DD; --teal: #1D9E75; --coral: #D85A30; --blue: #378ADD;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1c1a; --bg2: #252523; --bg3: #2e2e2b;
+        --text: #e8e6df; --text2: #9c9a93; --text3: #6b6a64;
+        --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.18);
+        --info-bg: #042c53; --info-tc: #85b7eb;
+        --success-bg: #173404; --success-tc: #97c459;
+        --warn-bg: #412402; --warn-tc: #fac775;
+        --danger-bg: #501313; --danger-tc: #f09595;
+      }
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+    #app { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .logo { font-size: 20px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
+    .save-badge { font-size: 11px; color: var(--success-tc); background: var(--success-bg); padding: 2px 8px; border-radius: 20px; opacity: 0; transition: opacity .3s; }
+    .top-date { font-size: 11px; color: var(--text3); margin-bottom: 18px; }
+    .nav { display: flex; gap: 6px; flex-wrap: wrap; }
+    .nav-btn { font-size: 12px; padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--text2); transition: background .15s; }
+    .nav-btn.active { background: var(--text); color: var(--bg); border-color: transparent; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .page-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .page-sub { font-size: 11px; color: var(--text2); margin-bottom: 14px; }
+    .sub-nav { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .sub-btn { font-size: 12px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--text2); transition: background .15s; }
+    .sub-btn.active { background: var(--bg2); color: var(--text); border-color: var(--border2); }
+    .view { display: none; }
+    .view.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .stat { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; }
+    .stat:hover { outline: 1px solid var(--border2); }
+    .stat-l { font-size: 11px; color: var(--text2); margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+    .stat-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .stat-v { font-size: 18px; font-weight: 600; color: var(--text); }
+    .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+    .two-col { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); gap: 12px; }
+    .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
+    .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+    .bar-bg { height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; margin-top: 5px; }
+    .bar-f { height: 100%; border-radius: 3px; transition: width .4s; }
+    .cf-row { margin-bottom: 10px; }
+    .cf-row:last-child { margin-bottom: 0; }
+    .cf-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 3px; }
+    .pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+    .log-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .log-row:last-child { border-bottom: none; }
+    .goal-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px 14px; margin-bottom: 8px; }
+    .goal-card:last-child { margin-bottom: 0; }
+    .form-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
+    .form-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .form-row label { font-size: 12px; color: var(--text2); flex: 1; }
+    .form-row input, .form-row select { font-size: 13px; padding: 6px 10px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); outline: none; }
+    .form-row input:focus, .form-row select:focus { border-color: var(--purple); }
+    .auto-row { background: var(--bg2); padding: 8px 10px; border-radius: var(--radius); display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .auto-row label { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+    .auto-val { font-size: 13px; font-weight: 600; color: var(--text); }
+    .divider { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; margin: 14px 0 8px; }
+    .btn-row { display: flex; gap: 8px; margin-top: 16px; }
+    button { font-size: 13px; padding: 7px 16px; border-radius: var(--radius); border: 1px solid var(--border2); background: transparent; color: var(--text); cursor: pointer; transition: background .15s; }
+    button:hover { background: var(--bg2); }
+    button.primary { background: var(--text); color: var(--bg); border-color: transparent; }
+    button.primary:hover { opacity: .88; }
+    .skill-bg { height: 4px; background: var(--bg2); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+    .skill-f { height: 100%; border-radius: 2px; background: var(--teal); }
+    .inv-row { margin-bottom: 10px; }
+    .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+    .quick-btn { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--bg); cursor: pointer; transition: background .15s; font-size: 12px; color: var(--text); }
+    .quick-btn:hover { background: var(--bg2); }
+    .tog { position: relative; width: 34px; height: 18px; background: var(--border2); border-radius: 9px; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+    .tog.on { background: var(--teal); }
+    .tog::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform .2s; }
+    .tog.on::after { transform: translateX(16px); }
+    .score-ring { width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--border2); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .loading { animation: pulse 1.2s ease-in-out infinite; color: var(--text3); font-size: 13px; }
+    .empty { font-size: 12px; color: var(--text3); }
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+      .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="logo">Life OS <span class="save-badge" id="save-badge">Saved</span></div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="gotoPage('home',this)">Home</button>
+      <button class="nav-btn" onclick="gotoPage('finance',this)">Finances</button>
+      <button class="nav-btn" onclick="gotoPage('health',this)">Health</button>
+      <button class="nav-btn" onclick="gotoPage('career',this)">Career</button>
+      <button class="nav-btn" onclick="gotoPage('goals',this)">Goals</button>
+    </nav>
+  </div>
+  <div class="top-date" id="top-date"></div>
+
+  <!-- HOME -->
+  <div class="page active" id="pg-home">
+    <div class="stats-grid">
+      <div class="stat" onclick="gotoPage('finance',document.querySelectorAll('.nav-btn')[1])">
+        <div class="stat-l"><span class="stat-dot" style="background:var(--purple)"></span>Net worth</div>
+        <div class="stat-v" id="h-nw">—</div><div class="stat-sub" id="h-sr">Log finances</div>
+      </div>
+      <div class="stat" onclick="gotoPage('health',document.querySelectorAll('.nav-btn')[2])">
+        <div class="stat-l"><span class="stat-dot" style="background:var(--coral)"></span>Body weight</div>
+        <div class="stat-v" id="h-wt">— kg</div><div class="stat-sub" id="h-gym">Log health</div>
+      </div>
+      <div class="stat" onclick="gotoPage('career',document.querySelectorAll('.nav-btn')[3])">
+        <div class="stat-l"><span class="stat-dot" style="background:var(--teal)"></span>Role</div>
+        <div class="stat-v" style="font-size:14px;line-height:1.3" id="h-role">—</div><div class="stat-sub" id="h-co">Update career</div>
+      </div>
+      <div class="stat" onclick="gotoPage('goals',document.querySelectorAll('.nav-btn')[4])">
+        <div class="stat-l"><span class="stat-dot" style="background:var(--blue)"></span>Goals</div>
+        <div class="stat-v" id="h-goals">0</div><div class="stat-sub" id="h-goals-sub">Add goals</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Today's targets</div>
+        <div class="cf-row"><div class="cf-label"><span>Calories</span><span id="hc-k">— / 2,900</span></div><div class="bar-bg"><div class="bar-f" id="hc-kb" style="background:var(--coral);width:0%"></div></div></div>
+        <div class="cf-row"><div class="cf-label"><span>Protein</span><span id="hc-p">— / 134g</span></div><div class="bar-bg"><div class="bar-f" id="hc-pb" style="background:var(--purple);width:0%"></div></div></div>
+        <div class="cf-row"><div class="cf-label"><span>Water</span><span id="hc-w">— / 3.0L</span></div><div class="bar-bg"><div class="bar-f" id="hc-wb" style="background:var(--blue);width:0%"></div></div></div>
+        <button style="margin-top:12px;width:100%;font-size:12px" onclick="gotoPage('health',document.querySelectorAll('.nav-btn')[2]);setTimeout(()=>setHSub('diet'),80)">+ Log today's diet</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Active goals</div>
+        <div id="h-gl"><div class="empty">No active goals yet.</div></div>
+        <button style="margin-top:10px;width:100%;font-size:12px" onclick="gotoPage('goals',document.querySelectorAll('.nav-btn')[4]);setTimeout(()=>setGSub('add'),80)">+ Add goal</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Quick log</div>
+      <div class="quick-grid">
+        <button class="quick-btn" onclick="gotoPage('finance',document.querySelectorAll('.nav-btn')[1]);setTimeout(()=>setFSub('entry'),80)"><span class="stat-dot" style="background:var(--purple)"></span>Log month</button>
+        <button class="quick-btn" onclick="gotoPage('health',document.querySelectorAll('.nav-btn')[2]);setTimeout(()=>setHSub('gym'),80)"><span class="stat-dot" style="background:var(--coral)"></span>Log gym</button>
+        <button class="quick-btn" onclick="gotoPage('health',document.querySelectorAll('.nav-btn')[2]);setTimeout(()=>setHSub('diet'),80)"><span class="stat-dot" style="background:var(--coral)"></span>Log diet</button>
+        <button class="quick-btn" onclick="gotoPage('goals',document.querySelectorAll('.nav-btn')[4]);setTimeout(()=>setGSub('add'),80)"><span class="stat-dot" style="background:var(--blue)"></span>Add goal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCES -->
+  <div class="page" id="pg-finance">
+    <div class="page-title">Finances</div>
+    <div class="page-sub">Monthly snapshots · Net worth tracker · Investment breakdown</div>
+    <div class="sub-nav">
+      <button class="sub-btn active" onclick="setFSub('dash',this)">Dashboard</button>
+      <button class="sub-btn" onclick="setFSub('entry',this)">+ Log month</button>
+      <button class="sub-btn" onclick="setFSub('hist',this)">History</button>
+    </div>
+    <div class="view active" id="fv-dash">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-l">Net worth</div><div class="stat-v" id="f-nw">—</div></div>
+        <div class="stat"><div class="stat-l">Savings</div><div class="stat-v" id="f-sv">—</div></div>
+        <div class="stat"><div class="stat-l">Savings rate</div><div class="stat-v" id="f-sr">—</div></div>
+        <div class="stat"><div class="stat-l">Invested</div><div class="stat-v" id="f-iv">—</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Cash flow</div>
+          <div class="cf-row"><div class="cf-label"><span>Income</span><span id="f-ci">—</span></div><div class="bar-bg"><div class="bar-f" id="f-cib" style="background:var(--teal);width:0%"></div></div></div>
+          <div class="cf-row"><div class="cf-label"><span>Expenses</span><span id="f-ce">—</span></div><div class="bar-bg"><div class="bar-f" id="f-ceb" style="background:var(--coral);width:0%"></div></div></div>
+          <div class="cf-row"><div class="cf-label"><span>Saved</span><span id="f-cs">—</span></div><div class="bar-bg"><div class="bar-f" id="f-csb" style="background:var(--purple);width:0%"></div></div></div>
+        </div>
+        <div class="card"><div class="card-title">Investments</div><div id="f-inv"><div class="empty">Log a month to see breakdown.</div></div></div>
+      </div>
+    </div>
+    <div class="view" id="fv-entry">
+      <div class="form-card">
+        <div class="card-title">Log monthly snapshot</div>
+        <div class="form-row"><label>Month</label><input type="month" id="fe-mo" style="width:160px"/></div>
+        <div class="divider">Cash flow</div>
+        <div class="form-row"><label>Total income (₹)</label><input type="number" id="fe-in" placeholder="0" style="width:130px" oninput="fCalc()"/></div>
+        <div class="form-row"><label>Total expenses (₹)</label><input type="number" id="fe-ex" placeholder="0" style="width:130px" oninput="fCalc()"/></div>
+        <div class="auto-row"><label>Savings (auto-calc)</label><span class="auto-val" id="fe-sc">—</span></div>
+        <div class="divider">Investments</div>
+        <div class="form-row"><label>Mutual funds (₹)</label><input type="number" id="fe-mf" placeholder="0" style="width:130px" oninput="fCalc()"/></div>
+        <div class="form-row"><label>Stocks (₹)</label><input type="number" id="fe-st" placeholder="0" style="width:130px" oninput="fCalc()"/></div>
+        <div class="form-row"><label>FD / savings balance (₹)</label><input type="number" id="fe-fd" placeholder="0" style="width:130px" oninput="fCalc()"/></div>
+        <div class="auto-row"><label>Net worth (auto-calc)</label><span class="auto-val" id="fe-nc">—</span></div>
+        <div class="btn-row"><button class="primary" onclick="fSave()">Save entry</button><button onclick="setFSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+    <div class="view" id="fv-hist">
+      <div class="card"><div class="card-title">Monthly history</div><div id="f-hl"><div class="empty">No entries yet.</div></div></div>
+    </div>
+  </div>
+
+  <!-- HEALTH -->
+  <div class="page" id="pg-health">
+    <div class="page-title">Health</div>
+    <div class="page-sub">Bulk · 61 kg · Target 2,900 kcal · 134g protein · 3L water</div>
+    <div class="sub-nav">
+      <button class="sub-btn active" onclick="setHSub('dash',this)">Dashboard</button>
+      <button class="sub-btn" onclick="setHSub('gym',this)">+ Gym</button>
+      <button class="sub-btn" onclick="setHSub('diet',this)">+ Diet</button>
+      <button class="sub-btn" onclick="setHSub('checkin',this)">Weekly</button>
+    </div>
+    <div class="view active" id="hv-dash">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-l">Body weight</div><div class="stat-v" id="hl-wt">— kg</div></div>
+        <div class="stat"><div class="stat-l">Gym this week</div><div class="stat-v" id="hl-gw">0</div><div class="stat-sub">sessions</div></div>
+        <div class="stat"><div class="stat-l">Avg calories</div><div class="stat-v" id="hl-kc">—</div><div class="stat-sub">target 2,900</div></div>
+        <div class="stat"><div class="stat-l">Avg protein</div><div class="stat-v" id="hl-pr">—</div><div class="stat-sub">target 134g</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Today's targets</div>
+        <div class="cf-row"><div class="cf-label"><span>Calories</span><span id="ht-k">— / 2,900</span></div><div class="bar-bg"><div class="bar-f" id="ht-kb" style="background:var(--coral);width:0%"></div></div></div>
+        <div class="cf-row"><div class="cf-label"><span>Protein</span><span id="ht-p">— / 134g</span></div><div class="bar-bg"><div class="bar-f" id="ht-pb" style="background:var(--purple);width:0%"></div></div></div>
+        <div class="cf-row"><div class="cf-label"><span>Water</span><span id="ht-w">— / 3.0L</span></div><div class="bar-bg"><div class="bar-f" id="ht-wb" style="background:var(--blue);width:0%"></div></div></div>
+      </div>
+      <div class="card"><div class="card-title">Recent gym sessions</div><div id="hl-gl"><div class="empty">No sessions yet.</div></div></div>
+    </div>
+    <div class="view" id="hv-gym">
+      <div class="form-card">
+        <div class="card-title">Log gym session</div>
+        <div class="form-row"><label>Date</label><input type="date" id="hg-dt" style="width:160px"/></div>
+        <div class="form-row"><label>Muscle group</label><select id="hg-gr" style="width:150px"><option>Chest</option><option>Back</option><option>Legs</option><option>Shoulders</option><option>Arms</option><option>Full body</option></select></div>
+        <div class="form-row"><label>Exercises done</label><input type="text" id="hg-ex" placeholder="e.g. Bench press, Incline DB" style="width:220px"/></div>
+        <div class="form-row"><label>Sets completed</label><input type="number" id="hg-se" placeholder="0" style="width:70px"/></div>
+        <div class="form-row"><label>Duration (min)</label><input type="number" id="hg-du" placeholder="0" style="width:70px"/></div>
+        <div class="form-row"><label>Session rating</label><select id="hg-ra" style="width:150px"><option value="5">5 — Beast mode</option><option value="4">4 — Solid</option><option value="3" selected>3 — Okay</option><option value="2">2 — Weak</option><option value="1">1 — Bad day</option></select></div>
+        <div class="btn-row"><button class="primary" onclick="hSaveGym()">Save session</button><button onclick="setHSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+    <div class="view" id="hv-diet">
+      <div class="form-card">
+        <div class="card-title">Log daily diet</div>
+        <div class="form-row"><label>Date</label><input type="date" id="hd-dt" style="width:160px"/></div>
+        <div class="form-row"><label>Meals logged</label><input type="number" id="hd-ml" placeholder="0" style="width:70px"/></div>
+        <div class="form-row"><label>Approx. calories</label><input type="number" id="hd-kc" placeholder="0" style="width:100px"/></div>
+        <div class="form-row"><label>Protein (g)</label><input type="number" id="hd-pr" placeholder="0" style="width:100px"/></div>
+        <div class="form-row"><label>Water intake (L)</label><input type="number" id="hd-wa" placeholder="0" step="0.1" style="width:80px"/></div>
+        <div class="form-row"><label>Diet adherence</label><select id="hd-ad" style="width:150px"><option>On plan</option><option>Mostly on plan</option><option>Off plan</option></select></div>
+        <div class="form-row"><label>Cheat meal today?</label><div class="tog" id="hd-ch" onclick="this.classList.toggle('on')"></div></div>
+        <div class="btn-row"><button class="primary" onclick="hSaveDiet()">Save diet log</button><button onclick="setHSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+    <div class="view" id="hv-checkin">
+      <div class="form-card">
+        <div class="card-title">Weekly check-in</div>
+        <div class="form-row"><label>Week of</label><input type="date" id="hc-dt" style="width:160px"/></div>
+        <div class="form-row"><label>Body weight (kg)</label><input type="number" id="hc-wt" placeholder="61" step="0.1" style="width:90px"/></div>
+        <div class="form-row"><label>Gym sessions this week</label><input type="number" id="hc-gs" placeholder="0" style="width:70px"/></div>
+        <div class="form-row"><label>Energy level avg</label><select id="hc-en" style="width:130px"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+        <div class="form-row"><label>Sleep avg (hrs)</label><input type="number" id="hc-sl" placeholder="7" step="0.5" style="width:70px"/></div>
+        <div class="form-row"><label>Notes / observations</label><input type="text" id="hc-no" placeholder="How did the week feel?" style="width:220px"/></div>
+        <div class="btn-row"><button class="primary" onclick="hSaveCheckin()">Save check-in</button><button onclick="setHSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAREER -->
+  <div class="page" id="pg-career">
+    <div class="page-title">Career</div>
+    <div class="page-sub">Role · Projects · Skills · Milestones</div>
+    <div class="sub-nav">
+      <button class="sub-btn active" onclick="setCaSub('dash',this)">Dashboard</button>
+      <button class="sub-btn" onclick="setCaSub('profile',this)">Profile</button>
+      <button class="sub-btn" onclick="setCaSub('project',this)">+ Project</button>
+      <button class="sub-btn" onclick="setCaSub('skill',this)">+ Skill</button>
+    </div>
+    <div class="view active" id="cav-dash">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-l">Role</div><div class="stat-v" style="font-size:14px;line-height:1.3" id="ca-ro">—</div><div class="stat-sub" id="ca-co">—</div></div>
+        <div class="stat"><div class="stat-l">Experience</div><div class="stat-v" id="ca-ex">—</div></div>
+        <div class="stat"><div class="stat-l">Active projects</div><div class="stat-v" id="ca-ap">0</div></div>
+        <div class="stat"><div class="stat-l">Skills tracked</div><div class="stat-v" id="ca-sk">0</div></div>
+      </div>
+      <div class="two-col">
+        <div class="card"><div class="card-title">Projects</div><div id="ca-pl"><div class="empty">No projects yet.</div></div></div>
+        <div class="card"><div class="card-title">Skills</div><div id="ca-sl"><div class="empty">No skills yet.</div></div></div>
+      </div>
+      <div class="card"><div class="card-title">Next milestone</div><div id="ca-ms"><div class="empty">Set your profile to add a milestone.</div></div></div>
+    </div>
+    <div class="view" id="cav-profile">
+      <div class="form-card">
+        <div class="card-title">Your profile</div>
+        <div class="form-row"><label>Current role</label><input type="text" id="cp-ro" style="width:200px"/></div>
+        <div class="form-row"><label>Company</label><input type="text" id="cp-co" style="width:200px"/></div>
+        <div class="form-row"><label>Years of experience</label><input type="number" id="cp-ex" style="width:70px"/></div>
+        <div class="form-row"><label>Next milestone</label><input type="text" id="cp-ms" style="width:240px"/></div>
+        <div class="form-row"><label>Target date</label><input type="date" id="cp-dt" style="width:160px"/></div>
+        <div class="btn-row"><button class="primary" onclick="caSaveProfile()">Save profile</button><button onclick="setCaSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+    <div class="view" id="cav-project">
+      <div class="form-card">
+        <div class="card-title">Add project</div>
+        <div class="form-row"><label>Project name</label><input type="text" id="cpr-nm" style="width:240px"/></div>
+        <div class="form-row"><label>Status</label><select id="cpr-st" style="width:150px"><option>In progress</option><option>Planning</option><option>Done</option><option>On hold</option></select></div>
+        <div class="form-row"><label>Target date</label><input type="date" id="cpr-dt" style="width:160px"/></div>
+        <div class="btn-row"><button class="primary" onclick="caSaveProject()">Save project</button><button onclick="setCaSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+    <div class="view" id="cav-skill">
+      <div class="form-card">
+        <div class="card-title">Add skill</div>
+        <div class="form-row"><label>Skill name</label><input type="text" id="csk-nm" style="width:200px"/></div>
+        <div class="form-row"><label>Level</label><select id="csk-lv" style="width:150px"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Expert</option></select></div>
+        <div class="btn-row"><button class="primary" onclick="caSaveSkill()">Save skill</button><button onclick="setCaSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOALS -->
+  <div class="page" id="pg-goals">
+    <div class="page-title">Goals</div>
+    <div class="page-sub">Quarterly OKRs · Key results · Progress tracking</div>
+    <div class="sub-nav">
+      <button class="sub-btn active" onclick="setGSub('dash',this)">Dashboard</button>
+      <button class="sub-btn" onclick="setGSub('add',this)">+ Add goal</button>
+    </div>
+    <div class="view active" id="gv-dash">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-l">Total goals</div><div class="stat-v" id="gl-to">0</div></div>
+        <div class="stat"><div class="stat-l">In progress</div><div class="stat-v" id="gl-ip">0</div></div>
+        <div class="stat"><div class="stat-l">Completed</div><div class="stat-v" id="gl-dn">0</div></div>
+        <div class="stat"><div class="stat-l">Avg progress</div><div class="stat-v" id="gl-av">—</div></div>
+      </div>
+      <div id="gl-list"><div class="empty">No goals yet. Add your first OKR above.</div></div>
+    </div>
+    <div class="view" id="gv-add">
+      <div class="form-card">
+        <div class="card-title">Add new goal</div>
+        <div class="form-row"><label>Goal title</label><input type="text" id="ga-ti" style="width:240px"/></div>
+        <div class="form-row"><label>Category</label><select id="ga-ca" style="width:150px"><option>Finance</option><option>Career</option><option>Health</option><option>Personal</option></select></div>
+        <div class="form-row"><label>Quarter</label><select id="ga-qu" style="width:100px"><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select></div>
+        <div class="form-row"><label>Target date</label><input type="date" id="ga-dt" style="width:160px"/></div>
+        <div class="divider">Key results</div>
+        <div class="form-row"><label>Key result 1</label><input type="text" id="ga-k1" style="width:240px"/></div>
+        <div class="form-row"><label>KR1 progress (%)</label><input type="number" id="ga-p1" placeholder="0" style="width:70px" min="0" max="100"/></div>
+        <div class="form-row"><label>Key result 2</label><input type="text" id="ga-k2" style="width:240px"/></div>
+        <div class="form-row"><label>KR2 progress (%)</label><input type="number" id="ga-p2" placeholder="0" style="width:70px" min="0" max="100"/></div>
+        <div class="form-row"><label>Status</label><select id="ga-st" style="width:150px"><option>Not started</option><option>In progress</option><option>At risk</option><option>Done</option></select></div>
+        <div class="form-row"><label>Reflection note</label><input type="text" id="ga-no" style="width:240px" placeholder="Why this goal matters..."/></div>
+        <div class="btn-row"><button class="primary" onclick="gSaveGoal()">Save goal</button><button onclick="setGSub('dash')">Cancel</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CAT_C={Finance:{bg:'#EEEDFE',tc:'#3C3489'},Career:{bg:'#E1F5EE',tc:'#085041'},Health:{bg:'#FAECE7',tc:'#712B13'},Personal:{bg:'#E6F1FB',tc:'#0C447C'}};
+const ST_C={'In progress':{bg:'#e6f1fb',tc:'#0c447c'},'Planning':{bg:'#faeeda',tc:'#633806'},'Done':{bg:'#eaf3de',tc:'#27500a'},'On hold':{bg:'#f1efe8',tc:'#5f5e5a'},'Not started':{bg:'#f1efe8',tc:'#5f5e5a'},'At risk':{bg:'#fcebeb',tc:'#791f1f'}};
+const SKLP={Beginner:20,Intermediate:50,Advanced:75,Expert:100};
+const T={kcal:2900,prot:134,water:3.0};
+const TODAY=new Date().toISOString().slice(0,10);
+let D={fin:[],gym:[],diet:[],checkins:[],career:{role:'',company:'',exp:0,milestone:'',target:''},projects:[],skills:[],goals:[]};
+
+function fmt(n){if(n===undefined||n===null||isNaN(n))return'—';if(Math.abs(n)>=100000)return'₹'+(n/100000).toFixed(1)+'L';return'₹'+Math.round(n).toLocaleString('en-IN');}
+function g(id){return document.getElementById(id);}
+
+function save(){
+  localStorage.setItem('lifeOS_v1',JSON.stringify(D));
+  const b=g('save-badge');b.style.opacity='1';setTimeout(()=>b.style.opacity='0',1800);
+}
+function load(){
+  try{const r=localStorage.getItem('lifeOS_v1');if(r)D=JSON.parse(r);}catch(e){}
+  refreshAll();
+}
+
+function gotoPage(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  g('pg-'+p).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(p==='home')refreshHome();
+  if(p==='finance')refreshFin();
+  if(p==='health')refreshHealth();
+  if(p==='career')refreshCareer();
+  if(p==='goals')refreshGoals();
+}
+
+function setSub(prefix,views,v,el){
+  views.forEach(id=>{const el2=g(prefix+id);if(el2)el2.classList.toggle('active',id===v);});
+  document.querySelectorAll('#pg-'+prefix.split('-')[0]+' .sub-btn').forEach(x=>x.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+function setFSub(v,el){setSub('fv-',['dash','entry','hist'],v,el);if(v==='dash')refreshFin();if(v==='hist')renderFinHist();}
+function setHSub(v,el){setSub('hv-',['dash','gym','diet','checkin'],v,el);if(v==='dash')refreshHealth();}
+function setCaSub(v,el){setSub('cav-',['dash','profile','project','skill'],v,el);if(v==='dash')refreshCareer();}
+function setGSub(v,el){setSub('gv-',['dash','add'],v,el);if(v==='dash')refreshGoals();}
+
+// FINANCE
+function fCalc(){
+  const inc=parseFloat(g('fe-in').value)||0,exp=parseFloat(g('fe-ex').value)||0;
+  const mf=parseFloat(g('fe-mf').value)||0,st=parseFloat(g('fe-st').value)||0,fd=parseFloat(g('fe-fd').value)||0;
+  g('fe-sc').textContent=fmt(inc-exp);g('fe-nc').textContent=fmt(mf+st+fd+(inc-exp));
+}
+function fSave(){
+  const mo=g('fe-mo').value;if(!mo){alert('Select a month');return;}
+  const inc=parseFloat(g('fe-in').value)||0,exp=parseFloat(g('fe-ex').value)||0;
+  const mf=parseFloat(g('fe-mf').value)||0,st=parseFloat(g('fe-st').value)||0,fd=parseFloat(g('fe-fd').value)||0;
+  const sav=inc-exp,inv=mf+st+fd,nw=inv+sav;
+  const i=D.fin.findIndex(e=>e.month===mo);
+  const entry={month:mo,inc,exp,sav,mf,st,fd,inv,nw};
+  if(i>=0)D.fin[i]=entry;else D.fin.push(entry);
+  D.fin.sort((a,b)=>a.month.localeCompare(b.month));
+  save();setFSub('dash');refreshHome();
+}
+function refreshFin(){
+  if(!D.fin.length)return;
+  const l=D.fin[D.fin.length-1];
+  const sr=l.inc>0?Math.round(l.sav/l.inc*100):0;
+  g('f-nw').textContent=fmt(l.nw);g('f-sv').textContent=fmt(l.sav);
+  g('f-sr').textContent=sr+'%';g('f-iv').textContent=fmt(l.inv);
+  const mx=Math.max(l.inc,l.exp,l.sav,1);
+  g('f-ci').textContent=fmt(l.inc);g('f-ce').textContent=fmt(l.exp);g('f-cs').textContent=fmt(l.sav);
+  g('f-cib').style.width=Math.round(l.inc/mx*100)+'%';
+  g('f-ceb').style.width=Math.round(l.exp/mx*100)+'%';
+  g('f-csb').style.width=Math.max(0,Math.round(l.sav/mx*100))+'%';
+  const IC=['#7F77DD','#1D9E75','#378ADD'],IL=['Mutual funds','Stocks','FD / savings'],IV=[l.mf,l.st,l.fd],IT=l.inv||1;
+  g('f-inv').innerHTML=IV.map((v,i)=>`<div class="inv-row"><div class="cf-label"><span>${IL[i]}</span><span>${fmt(v)} · ${Math.round(v/IT*100)}%</span></div><div class="bar-bg"><div class="bar-f" style="background:${IC[i]};width:${Math.round(v/IT*100)}%"></div></div></div>`).join('');
+}
+function renderFinHist(){
+  if(!D.fin.length){g('f-hl').innerHTML='<div class="empty">No entries yet.</div>';return;}
+  g('f-hl').innerHTML=[...D.fin].reverse().map(e=>{
+    const sr=e.inc>0?Math.round(e.sav/e.inc*100):0;
+    const sc=sr>=30?'#eaf3de':sr>=15?'#faeeda':'#fcebeb';
+    const tc=sr>=30?'#27500a':sr>=15?'#633806':'#791f1f';
+    const[y,m]=e.month.split('-');
+    return`<div class="log-row"><span style="font-weight:600;width:64px">${MNAMES[parseInt(m)-1]} ${y}</span><span style="flex:1;color:var(--text2)">${fmt(e.inc)} in · ${fmt(e.exp)} out</span><span>${fmt(e.nw)}</span><span class="pill" style="background:${sc};color:${tc};margin-left:8px">${sr}% saved</span></div>`;
+  }).join('');
+}
+
+// HEALTH
+function hSaveGym(){
+  const d=g('hg-dt').value;if(!d){alert('Select a date');return;}
+  D.gym.push({date:d,group:g('hg-gr').value,ex:g('hg-ex').value,sets:parseInt(g('hg-se').value)||0,dur:parseInt(g('hg-du').value)||0,rating:parseInt(g('hg-ra').value)});
+  D.gym.sort((a,b)=>b.date.localeCompare(a.date));
+  save();setHSub('dash');refreshHome();
+}
+function hSaveDiet(){
+  const d=g('hd-dt').value;if(!d){alert('Select a date');return;}
+  D.diet.push({date:d,meals:parseInt(g('hd-ml').value)||0,kcal:parseInt(g('hd-kc').value)||0,prot:parseInt(g('hd-pr').value)||0,water:parseFloat(g('hd-wa').value)||0,adhere:g('hd-ad').value,cheat:g('hd-ch').classList.contains('on')});
+  D.diet.sort((a,b)=>b.date.localeCompare(a.date));
+  g('hd-ch').classList.remove('on');
+  save();setHSub('dash');refreshHome();
+}
+function hSaveCheckin(){
+  const d=g('hc-dt').value;if(!d){alert('Select a date');return;}
+  D.checkins.push({date:d,weight:parseFloat(g('hc-wt').value)||61,sessions:parseInt(g('hc-gs').value)||0,energy:g('hc-en').value,sleep:parseFloat(g('hc-sl').value)||0,notes:g('hc-no').value});
+  D.checkins.sort((a,b)=>a.date.localeCompare(b.date));
+  save();setHSub('dash');refreshHome();
+}
+function refreshHealth(){
+  const lc=D.checkins[D.checkins.length-1];
+  g('hl-wt').textContent=lc?(lc.weight.toFixed(1)+' kg'):'— kg';
+  const wa=new Date(new Date()-7*86400000).toISOString().slice(0,10);
+  g('hl-gw').textContent=D.gym.filter(x=>x.date>=wa).length;
+  const l7=D.diet.slice(0,7);
+  g('hl-kc').textContent=l7.length?Math.round(l7.reduce((s,d)=>s+d.kcal,0)/l7.length).toLocaleString()+' kcal':'—';
+  g('hl-pr').textContent=l7.length?Math.round(l7.reduce((s,d)=>s+d.prot,0)/l7.length)+'g':'—';
+  const td=D.diet.find(d=>d.date===TODAY);
+  if(td){
+    g('ht-k').textContent=td.kcal.toLocaleString()+' / 2,900';g('ht-p').textContent=td.prot+'g / 134g';g('ht-w').textContent=td.water.toFixed(1)+' / 3.0L';
+    g('ht-kb').style.width=Math.min(100,Math.round(td.kcal/T.kcal*100))+'%';
+    g('ht-pb').style.width=Math.min(100,Math.round(td.prot/T.prot*100))+'%';
+    g('ht-wb').style.width=Math.min(100,Math.round(td.water/T.water*100))+'%';
+  }
+  const SC={5:'#1D9E75',4:'#1D9E75',3:'#EF9F27',2:'#D85A30',1:'#D85A30'};
+  g('hl-gl').innerHTML=D.gym.length?D.gym.slice(0,4).map(x=>`<div class="log-row"><span style="width:56px;color:var(--text3)">${x.date.slice(5)}</span><span class="pill" style="background:#e6f1fb;color:#0c447c">${x.group}</span><span style="flex:1;margin-left:8px;color:var(--text2)">${x.ex||'—'}</span><span style="color:${SC[x.rating]}">${'★'.repeat(x.rating)}${'☆'.repeat(5-x.rating)}</span></div>`).join(''):'<div class="empty">No sessions yet.</div>';
+}
+
+// CAREER
+function caSaveProfile(){
+  D.career={role:g('cp-ro').value,company:g('cp-co').value,exp:parseInt(g('cp-ex').value)||0,milestone:g('cp-ms').value,target:g('cp-dt').value};
+  save();setCaSub('dash');refreshHome();
+}
+function caSaveProject(){
+  const nm=g('cpr-nm').value.trim();if(!nm){alert('Enter a name');return;}
+  D.projects.push({name:nm,status:g('cpr-st').value,target:g('cpr-dt').value});
+  g('cpr-nm').value='';save();setCaSub('dash');
+}
+function caSaveSkill(){
+  const nm=g('csk-nm').value.trim();if(!nm){alert('Enter a skill');return;}
+  D.skills.push({name:nm,level:g('csk-lv').value});
+  g('csk-nm').value='';save();setCaSub('dash');
+}
+function refreshCareer(){
+  g('ca-ro').textContent=D.career.role||'—';g('ca-co').textContent=D.career.company||'—';
+  g('ca-ex').textContent=D.career.exp?(D.career.exp+' yrs'):'—';
+  g('ca-ap').textContent=D.projects.filter(p=>p.status==='In progress').length;
+  g('ca-sk').textContent=D.skills.length;
+  g('ca-pl').innerHTML=D.projects.length?D.projects.map(p=>{const sc=ST_C[p.status]||ST_C['On hold'];const dl=p.target?Math.ceil((new Date(p.target)-new Date())/86400000):null;return`<div class="log-row"><span style="flex:1;font-size:13px">${p.name}</span><span class="pill" style="background:${sc.bg};color:${sc.tc}">${p.status}</span>${dl!==null?`<span style="font-size:11px;color:var(--text3);margin-left:6px">${dl>0?dl+'d':''}</span>`:''}</div>`;}).join(''):'<div class="empty">No projects yet.</div>';
+  g('ca-sl').innerHTML=D.skills.length?D.skills.map(s=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px"><span>${s.name}</span><span style="color:var(--text3)">${s.level}</span></div><div class="skill-bg"><div class="skill-f" style="width:${SKLP[s.level]}%"></div></div></div>`).join(''):'<div class="empty">No skills yet.</div>';
+  g('ca-ms').innerHTML=D.career.milestone?`<div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#1D9E75;flex-shrink:0"></span><span style="flex:1;font-size:13px">${D.career.milestone}</span>${D.career.target?`<span style="font-size:11px;color:var(--text3)">${Math.ceil((new Date(D.career.target)-new Date())/86400000)}d away</span>`:''}</div>`:'<div class="empty">Set your profile to add a milestone.</div>';
+}
+
+// GOALS
+function gSaveGoal(){
+  const ti=g('ga-ti').value.trim();if(!ti){alert('Enter a title');return;}
+  D.goals.push({title:ti,cat:g('ga-ca').value,q:g('ga-qu').value,date:g('ga-dt').value,kr1:g('ga-k1').value,kr1p:Math.min(100,parseInt(g('ga-p1').value)||0),kr2:g('ga-k2').value,kr2p:Math.min(100,parseInt(g('ga-p2').value)||0),status:g('ga-st').value,note:g('ga-no').value});
+  ['ga-ti','ga-k1','ga-k2','ga-p1','ga-p2','ga-no'].forEach(id=>g(id).value='');
+  save();setGSub('dash');refreshHome();
+}
+function refreshGoals(){
+  g('gl-to').textContent=D.goals.length;
+  g('gl-ip').textContent=D.goals.filter(x=>x.status==='In progress').length;
+  g('gl-dn').textContent=D.goals.filter(x=>x.status==='Done').length;
+  const ap=D.goals.length?Math.round(D.goals.reduce((s,gl)=>{const pts=[gl.kr1p,gl.kr2p].filter(v=>v>0);return s+(pts.length?pts.reduce((a,b)=>a+b,0)/pts.length:0);},0)/D.goals.length):null;
+  g('gl-av').textContent=ap!==null?(ap+'%'):'—';
+  g('gl-list').innerHTML=D.goals.length?D.goals.map(gl=>{
+    const cc=CAT_C[gl.cat]||CAT_C.Personal,ss=ST_C[gl.status]||ST_C['Not started'];
+    const avg=([gl.kr1p,gl.kr2p].filter(v=>v>0).reduce((a,b)=>a+b,0)||0)/([gl.kr1p,gl.kr2p].filter(v=>v>0).length||1);
+    return`<div class="goal-card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:13px;font-weight:600;flex:1">${gl.title}</span><span class="pill" style="background:${cc.bg};color:${cc.tc}">${gl.cat}</span><span class="pill" style="background:#f1efe8;color:#5f5e5a">${gl.q}</span><span class="pill" style="background:${ss.bg};color:${ss.tc}">${gl.status}</span></div>${gl.kr1?`<div style="font-size:11px;color:var(--text2);margin-bottom:2px">${gl.kr1}</div><div class="bar-bg" style="margin-bottom:8px"><div class="bar-f" style="background:#7F77DD;width:${gl.kr1p}%"></div></div>`:''} ${gl.kr2?`<div style="font-size:11px;color:var(--text2);margin-bottom:2px">${gl.kr2}</div><div class="bar-bg" style="margin-bottom:8px"><div class="bar-f" style="background:#7F77DD;width:${gl.kr2p}%"></div></div>`:''}<div style="font-size:12px;font-weight:600;color:var(--text)">${Math.round(avg)}% overall</div></div>`;
+  }).join(''):'<div class="empty">No goals yet. Add your first OKR above.</div>';
+}
+
+// HOME
+function refreshHome(){
+  const lf=D.fin[D.fin.length-1];
+  g('h-nw').textContent=lf?fmt(lf.nw):'—';
+  g('h-sr').textContent=lf?(Math.round(lf.sav/lf.inc*100)+'% savings rate'):'Log finances';
+  const lc=D.checkins[D.checkins.length-1];
+  g('h-wt').textContent=lc?(lc.weight.toFixed(1)+' kg'):'— kg';
+  const wa=new Date(new Date()-7*86400000).toISOString().slice(0,10);
+  const wg=D.gym.filter(x=>x.date>=wa).length;
+  g('h-gym').textContent=wg?(wg+' sessions this week'):'Log health';
+  g('h-role').textContent=D.career.role||'—';
+  g('h-co').textContent=D.career.company||'Update career';
+  g('h-goals').textContent=D.goals.length;
+  const ig=D.goals.filter(x=>x.status==='In progress').length;
+  g('h-goals-sub').textContent=ig?(ig+' in progress'):'Add goals';
+  const td=D.diet.find(d=>d.date===TODAY);
+  if(td){
+    g('hc-k').textContent=td.kcal.toLocaleString()+' / 2,900';g('hc-p').textContent=td.prot+'g / 134g';g('hc-w').textContent=td.water.toFixed(1)+' / 3.0L';
+    g('hc-kb').style.width=Math.min(100,Math.round(td.kcal/T.kcal*100))+'%';
+    g('hc-pb').style.width=Math.min(100,Math.round(td.prot/T.prot*100))+'%';
+    g('hc-wb').style.width=Math.min(100,Math.round(td.water/T.water*100))+'%';
+  }
+  const ag=D.goals.filter(x=>x.status==='In progress').slice(0,3);
+  g('h-gl').innerHTML=ag.length?ag.map(gl=>{const cc=CAT_C[gl.cat]||CAT_C.Personal;const avg=([gl.kr1p,gl.kr2p].filter(v=>v>0).reduce((a,b)=>a+b,0)||0)/([gl.kr1p,gl.kr2p].filter(v=>v>0).length||1);return`<div style="margin-bottom:8px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span class="pill" style="background:${cc.bg};color:${cc.tc}">${gl.cat}</span><span style="font-size:12px;flex:1">${gl.title}</span><span style="font-size:11px;color:var(--text3)">${Math.round(avg)}%</span></div><div class="bar-bg"><div class="bar-f" style="background:#7F77DD;width:${Math.round(avg)}%"></div></div></div>`;}).join(''):'<div class="empty">No active goals.</div>';
+}
+
+function refreshAll(){refreshHome();refreshFin();refreshHealth();refreshCareer();refreshGoals();}
+
+// Init
+g('top-date').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+g('fe-mo').value=new Date().toISOString().slice(0,7);
+['hg-dt','hd-dt','hc-dt'].forEach(id=>{const el=g(id);if(el)el.value=TODAY;});
+load();
+</script>
+</body>
+</html>

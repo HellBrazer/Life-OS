@@ -1,0 +1,83 @@
+{
+  "fin": [
+    {
+      "month": "2025-02",
+      "inc": 85000,
+      "exp": 48000,
+      "sav": 37000,
+      "mf": 120000,
+      "st": 45000,
+      "fd": 80000,
+      "inv": 245000,
+      "nw": 282000
+    },
+    {
+      "month": "2025-03",
+      "inc": 85000,
+      "exp": 52000,
+      "sav": 33000,
+      "mf": 128000,
+      "st": 49000,
+      "fd": 80000,
+      "inv": 257000,
+      "nw": 290000
+    }
+  ],
+  "gym": [
+    { "date": "2025-04-01", "group": "Chest", "ex": "Bench press, Incline DB, Cable flyes", "sets": 12, "dur": 60, "rating": 4 },
+    { "date": "2025-04-03", "group": "Back", "ex": "Deadlift, Pull-ups, Cable rows", "sets": 14, "dur": 70, "rating": 5 },
+    { "date": "2025-04-05", "group": "Legs", "ex": "Squats, Leg press, Hamstring curl", "sets": 12, "dur": 65, "rating": 3 }
+  ],
+  "diet": [
+    { "date": "2025-04-01", "meals": 4, "kcal": 2850, "prot": 128, "water": 3.0, "adhere": "On plan", "cheat": false },
+    { "date": "2025-04-02", "meals": 3, "kcal": 2600, "prot": 115, "water": 2.5, "adhere": "Mostly on plan", "cheat": false },
+    { "date": "2025-04-03", "meals": 5, "kcal": 3100, "prot": 145, "water": 3.5, "adhere": "On plan", "cheat": false }
+  ],
+  "checkins": [
+    { "date": "2025-03-30", "weight": 61.5, "sessions": 4, "energy": "High", "sleep": 7.5, "notes": "Good week overall, strength improving" },
+    { "date": "2025-04-06", "weight": 62.0, "sessions": 3, "energy": "Medium", "sleep": 7.0, "notes": "Slightly tired mid-week but hit targets" }
+  ],
+  "career": {
+    "role": "Software Engineer",
+    "company": "Startup XYZ",
+    "exp": 3,
+    "milestone": "Get promoted to Senior Engineer",
+    "target": "2025-12-31"
+  },
+  "projects": [
+    { "name": "Launch v2 onboarding flow", "status": "In progress", "target": "2025-05-15" },
+    { "name": "API performance optimisation", "status": "Planning", "target": "2025-06-01" }
+  ],
+  "skills": [
+    { "name": "React", "level": "Advanced" },
+    { "name": "Node.js", "level": "Intermediate" },
+    { "name": "System design", "level": "Beginner" },
+    { "name": "SQL", "level": "Intermediate" }
+  ],
+  "goals": [
+    {
+      "title": "Build emergency fund",
+      "cat": "Finance",
+      "q": "Q2",
+      "date": "2025-06-30",
+      "kr1": "Save ₹3L in liquid fund",
+      "kr1p": 40,
+      "kr2": "Cut monthly expenses under ₹45,000",
+      "kr2p": 60,
+      "status": "In progress",
+      "note": "Financial security before aggressive investing"
+    },
+    {
+      "title": "Reach 65kg body weight",
+      "cat": "Health",
+      "q": "Q3",
+      "date": "2025-09-30",
+      "kr1": "Hit 2,900 kcal daily for 60+ days",
+      "kr1p": 25,
+      "kr2": "Gym 4x per week consistently",
+      "kr2p": 50,
+      "status": "In progress",
+      "note": "Clean bulk, minimise fat gain"
+    }
+  ]
+}

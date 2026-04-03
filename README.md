@@ -2,7 +2,7 @@
 
 A personal life tracking dashboard built as a single HTML file. Track your **finances**, **health**, **career**, and **goals** — all in one place, no server required.
 
-![Life OS](docs/preview.png)
+![Uploading image.png…]()
 
 ---
 
